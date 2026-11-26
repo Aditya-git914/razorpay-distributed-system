@@ -1,10 +1,18 @@
-import { AnalyticsOverview, Order, Payment, Settlement, ApiKey, Webhook, AIInsight } from '../types';
+import { AnalyticsOverview, Order, Payment, Settlement, ApiKey, Webhook, AIInsight, AuthUser, LoginCredentials, SignupData } from '../types';
 
 const API_BASE_URL = '';
 
 export class ApiClient {
   private static token: string | null = localStorage.getItem('rzp_token');
-  private static merchantId: string = '11111111-1111-1111-1111-111111111111';
+  private static merchantId: string = localStorage.getItem('rzp_merchant_id') || '11111111-1111-1111-1111-111111111111';
+  private static currentUser: AuthUser | null = (() => {
+    try {
+      const saved = localStorage.getItem('rzp_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  })();
 
   public static setToken(token: string) {
     this.token = token;
@@ -13,6 +21,133 @@ export class ApiClient {
 
   public static getToken(): string | null {
     return this.token;
+  }
+
+  public static getCurrentUser(): AuthUser | null {
+    return this.currentUser;
+  }
+
+  public static isAuthenticated(): boolean {
+    return !!this.token || !!this.currentUser;
+  }
+
+  public static setCurrentUser(user: AuthUser | null) {
+    this.currentUser = user;
+    if (user) {
+      localStorage.setItem('rzp_user', JSON.stringify(user));
+      if (user.token) {
+        this.setToken(user.token);
+      }
+      if (user.merchantId) {
+        this.merchantId = user.merchantId;
+        localStorage.setItem('rzp_merchant_id', user.merchantId);
+      }
+    } else {
+      localStorage.removeItem('rzp_user');
+      localStorage.removeItem('rzp_token');
+      localStorage.removeItem('rzp_merchant_id');
+      this.token = null;
+      this.merchantId = '11111111-1111-1111-1111-111111111111';
+    }
+  }
+
+  public static async login(credentials: LoginCredentials): Promise<AuthUser> {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Login failed with status ' + res.status);
+    }
+
+    const json = await res.json();
+    const data = json.data;
+    const authUser: AuthUser = {
+      userId: data.userId,
+      email: data.email,
+      fullName: data.fullName,
+      role: data.role,
+      merchantId: data.merchantId,
+      businessName: data.businessName,
+      token: data.token,
+    };
+
+    this.setCurrentUser(authUser);
+    return authUser;
+  }
+
+  public static async signin(credentials: LoginCredentials): Promise<AuthUser> {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/signin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Sign in failed with status ' + res.status);
+    }
+
+    const json = await res.json();
+    const data = json.data;
+    const authUser: AuthUser = {
+      userId: data.userId,
+      email: data.email,
+      fullName: data.fullName,
+      role: data.role,
+      merchantId: data.merchantId,
+      businessName: data.businessName,
+      token: data.token,
+    };
+
+    this.setCurrentUser(authUser);
+    return authUser;
+  }
+
+  public static async signup(data: SignupData): Promise<AuthUser> {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Signup failed: ' + (err.error || res.statusText));
+    }
+
+    const json = await res.json();
+    const resData = json.data;
+    const authUser: AuthUser = {
+      userId: resData.userId,
+      email: resData.email,
+      fullName: resData.fullName,
+      role: resData.role,
+      merchantId: resData.merchantId,
+      businessName: resData.businessName,
+      token: resData.token,
+    };
+
+    this.setCurrentUser(authUser);
+    return authUser;
+  }
+
+  public static async register(data: SignupData): Promise<AuthUser> {
+    return this.signup(data);
+  }
+
+  public static async logout(): Promise<void> {
+    try {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      }).catch(() => {});
+    } finally {
+      this.setCurrentUser(null);
+    }
   }
 
   private static getHeaders(): HeadersInit {

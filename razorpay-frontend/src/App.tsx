@@ -9,12 +9,18 @@ import { ApiKeysTab } from './components/ApiKeysTab';
 import { AiInsightsTab } from './components/AiInsightsTab';
 import { HostedCheckoutModal } from './components/HostedCheckoutModal';
 import { AiCopilotDrawer } from './components/AiCopilotDrawer';
+import { AuthModal } from './components/AuthModal';
 import { ApiClient } from './api/client';
-import { TabType, AnalyticsOverview, Payment, Settlement, ApiKey, Webhook, AIInsight } from './types';
+import { TabType, AnalyticsOverview, Payment, Settlement, ApiKey, Webhook, AIInsight, AuthUser } from './types';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isTestMode, setIsTestMode] = useState(true);
+
+  // Authentication state
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(ApiClient.getCurrentUser());
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
   // Data states
   const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(null);
@@ -88,6 +94,15 @@ export const App: React.FC = () => {
         onRunAiQuery={() => setActiveTab('ai-insights')}
         isTestMode={isTestMode}
         setIsTestMode={setIsTestMode}
+        currentUser={currentUser}
+        onOpenAuth={(mode) => {
+          setAuthMode(mode);
+          setIsAuthOpen(true);
+        }}
+        onLogout={() => {
+          ApiClient.logout();
+          setCurrentUser(null);
+        }}
       />
 
       {/* Main Layout: Sidebar + Tab Content */}
@@ -161,6 +176,17 @@ export const App: React.FC = () => {
 
       {/* Floating AI Copilot Assistant */}
       <AiCopilotDrawer />
+
+      {/* Login, Signup and Signin Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        initialMode={authMode}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={(user) => {
+          setCurrentUser(user);
+          loadAllData();
+        }}
+      />
     </div>
   );
 };

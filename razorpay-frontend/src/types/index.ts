@@ -103,3 +103,27 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
 }
+
+export interface AuthUser {
+  userId: string;
+  email: string;
+  fullName: string;
+  role: string;
+  merchantId?: string;
+  businessName?: string;
+  token?: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignupData {
+  fullName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  businessName?: string;
+  role?: string;
+}

@@ -260,20 +260,21 @@ Manifests included in `k8s/`:
 
 ## 📡 API Reference & cURL Testing Walkthrough
 
-### 1. Register & Authenticate User
+### 1. Register, Signup, Signin & Login Authentication
 ```bash
-# Register
-curl -X POST http://localhost:8080/api/v1/auth/register \
+# Signup / Register
+curl -X POST http://localhost:8080/api/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "fullName": "Rohit Sharma",
+    "businessName": "Rohit Store",
     "email": "rohit.sharma@example.com",
     "password": "Password123!",
     "phone": "+919876543210"
   }'
 
-# Login to receive JWT Token
-curl -X POST http://localhost:8080/api/v1/auth/login \
+# Signin / Login to receive JWT Token
+curl -X POST http://localhost:8080/api/v1/auth/signin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "rohit.sharma@example.com",

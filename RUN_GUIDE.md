@@ -234,30 +234,39 @@ Navigate to [http://localhost:3000](http://localhost:3000) in your browser:
 
 ---
 
-### Step 2: Register & Log In (User Service via Gateway)
+### Step 2: Authentication (Login, Signin, Signup, Register)
 
-#### 1. Register a Merchant User:
+#### 1. Sign Up / Register a Merchant Account:
+You can use either `/api/v1/auth/signup` or `/api/v1/auth/register`:
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/register \
+curl -X POST http://localhost:8080/api/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "fullName": "Aarav Sharma",
+    "businessName": "Aarav Tech Ventures",
     "email": "aarav.sharma@example.com",
     "password": "Password123!",
     "phone": "+919876543210"
   }'
 ```
 
-#### 2. Log In to Receive JWT Token:
+#### 2. Sign In / Login to Receive JWT Token:
+You can use either `/api/v1/auth/signin` or `/api/v1/auth/login`:
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -X POST http://localhost:8080/api/v1/auth/signin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "aarav.sharma@example.com",
     "password": "Password123!"
   }'
 ```
-*Copy the `accessToken` string from the JSON response.*
+*Copy the `token` string from the JSON response to use as `Bearer <YOUR_JWT_TOKEN>`.*
+
+#### 3. Fetch Current Authenticated Profile:
+```bash
+curl -X GET http://localhost:8080/api/v1/auth/me \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
 
 ---
 
