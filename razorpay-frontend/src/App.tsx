@@ -10,6 +10,8 @@ import { AiInsightsTab } from './components/AiInsightsTab';
 import { HostedCheckoutModal } from './components/HostedCheckoutModal';
 import { AiCopilotDrawer } from './components/AiCopilotDrawer';
 import { AuthModal } from './components/AuthModal';
+import { BankingFeatureModal, BankingFeatureId } from './components/BankingFeatureModal';
+import { BankingPlusTab } from './components/BankingPlusTab';
 import { ApiClient } from './api/client';
 import { TabType, AnalyticsOverview, Payment, Settlement, ApiKey, Webhook, AIInsight, AuthUser } from './types';
 
@@ -21,6 +23,9 @@ export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(ApiClient.getCurrentUser());
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+
+  // Banking+ Selected Feature Modal state
+  const [selectedBankingFeature, setSelectedBankingFeature] = useState<BankingFeatureId | null>(null);
 
   // Data states
   const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(null);
@@ -103,6 +108,9 @@ export const App: React.FC = () => {
           ApiClient.logout();
           setCurrentUser(null);
         }}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onSelectBankingFeature={(id) => setSelectedBankingFeature(id)}
       />
 
       {/* Main Layout: Sidebar + Tab Content */}
@@ -116,6 +124,13 @@ export const App: React.FC = () => {
               recentPayments={payments.slice(0, 5)}
               onOpenCheckout={() => setIsCheckoutOpen(true)}
               onGoToTransactions={() => setActiveTab('transactions')}
+            />
+          )}
+
+          {activeTab === 'banking' && (
+            <BankingPlusTab
+              onSelectFeature={(id) => setSelectedBankingFeature(id)}
+              onOpenCheckout={() => setIsCheckoutOpen(true)}
             />
           )}
 
@@ -186,6 +201,12 @@ export const App: React.FC = () => {
           setCurrentUser(user);
           loadAllData();
         }}
+      />
+
+      {/* Interactive Banking+ Feature Modal for 14 Business Banking Tools */}
+      <BankingFeatureModal
+        featureId={selectedBankingFeature}
+        onClose={() => setSelectedBankingFeature(null)}
       />
     </div>
   );

@@ -5,7 +5,8 @@ export type TabType =
   | 'settlements' 
   | 'apikeys' 
   | 'ai-insights' 
-  | 'wallet';
+  | 'wallet'
+  | 'banking';
 
 export interface Order {
   id?: string;

@@ -7,6 +7,7 @@ import {
   KeyRound, 
   BrainCircuit, 
   Wallet,
+  Building2,
   ExternalLink
 } from 'lucide-react';
 import { TabType } from '../types';
@@ -19,6 +20,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const navItems: Array<{ id: TabType; label: string; icon: React.ReactNode; badge?: string }> = [
     { id: 'overview', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
+    { id: 'banking', label: 'Banking+ (RazorpayX)', icon: <Building2 className="h-4 w-4" />, badge: 'NEW' },
     { id: 'transactions', label: 'Transactions', icon: <ArrowLeftRight className="h-4 w-4" /> },
     { id: 'payment-links', label: 'Payment Links', icon: <Link2 className="h-4 w-4" /> },
     { id: 'settlements', label: 'Settlements', icon: <Landmark className="h-4 w-4" /> },
