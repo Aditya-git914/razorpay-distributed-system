@@ -1,0 +1,8 @@
+# Multi-stage Dockerfile for Razorpay Spring Boot Microservices
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+ARG SERVICE_NAME
+ARG JAR_FILE=target/*.jar
+COPY ${SERVICE_NAME}/${JAR_FILE} app.jar
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

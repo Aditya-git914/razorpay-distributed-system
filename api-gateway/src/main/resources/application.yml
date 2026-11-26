@@ -1,0 +1,128 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # User Service Route
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback/user
+
+        # Merchant Service Route
+        - id: merchant-service
+          uri: lb://merchant-service
+          predicates:
+            - Path=/api/v1/merchants/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: merchantServiceCircuitBreaker
+                fallbackUri: forward:/fallback/merchant
+
+        # Payment Service Route
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**, /api/v1/orders/**, /api/v1/refunds/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: paymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback/payment
+
+        # Wallet Service Route
+        - id: wallet-service
+          uri: lb://wallet-service
+          predicates:
+            - Path=/api/v1/wallets/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: walletServiceCircuitBreaker
+                fallbackUri: forward:/fallback/wallet
+
+        # Transaction Service Route
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/v1/transactions/**, /api/v1/analytics/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: transactionServiceCircuitBreaker
+                fallbackUri: forward:/fallback/transaction
+
+        # Settlement Service Route
+        - id: settlement-service
+          uri: lb://settlement-service
+          predicates:
+            - Path=/api/v1/settlements/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: settlementServiceCircuitBreaker
+                fallbackUri: forward:/fallback/settlement
+
+        # Notification Service Route & WebSocket Handshake
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**, /ws/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: notificationServiceCircuitBreaker
+                fallbackUri: forward:/fallback/notification
+
+        # AI Assistant Service Route
+        - id: ai-assistant-service
+          uri: lb://ai-assistant-service
+          predicates:
+            - Path=/api/v1/ai/**
+          filters:
+            - name: AuthenticationFilter
+            - name: CircuitBreaker
+              args:
+                name: aiServiceCircuitBreaker
+                fallbackUri: forward:/fallback/ai
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: ${JWT_SECRET:razorpay_distributed_secret_key_needs_to_be_at_least_256_bits_long_for_hmac_sha256_security}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
